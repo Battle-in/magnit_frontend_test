@@ -71,7 +71,13 @@ class GetData {
     List<Product> newProducts = <Product>[];
 
     for (var product in products) {
-      newProducts.add(Product(product['id'], product['name'], HiveList<Characteristics>(characteristicsBox, objects: newCharacteristics)));
+      List<Characteristics> currentCharacteristics = <Characteristics>[];
+
+      for (var character in product['characteristics']){
+        currentCharacteristics.add(newCharacteristics[character]);
+      }
+      print(currentCharacteristics);
+      newProducts.add(Product(product['id'], product['name'], HiveList<Characteristics>(characteristicsBox, objects: currentCharacteristics)));
     }
 
     return newProducts;
@@ -81,7 +87,15 @@ class GetData {
     List<Shop> newShops = <Shop>[];
 
     for (var shop in shops) {
-      newShops.add(Shop(shop['id'], shop['name'], HiveList<Product>(productsBox, objects: newProducts)));
+      List<Product> currentProduct = <Product>[];
+
+      for(var product in shop['products']){
+        currentProduct.add(newProducts[product]);
+      }
+
+      newShops.add(Shop(shop['id'], shop['name'], HiveList<Product>(productsBox, objects: currentProduct)));
+
+      currentProduct = [];
     }
 
     return newShops;

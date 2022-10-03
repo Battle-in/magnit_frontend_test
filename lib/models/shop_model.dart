@@ -1,3 +1,4 @@
+import 'package:store/models/characteristics_model.dart';
 import 'package:store/models/product_model.dart';
 import 'package:hive/hive.dart';
 
@@ -30,5 +31,19 @@ class Shop extends HiveObject{
       'name': name,
       'products': products
     };
+  }
+
+  String _generateSubtitle(){
+    String subtitles = '';
+
+    for (var product in products) {
+      String characteristics = '';
+      for (Characteristics characteristic in product.characteristics){
+        characteristics += '${characteristic.weight.toString()}, ';
+      }
+      subtitles += '${product.name} ($characteristics), ';
+    }
+
+    return subtitles;
   }
 }

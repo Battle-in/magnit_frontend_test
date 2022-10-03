@@ -32,7 +32,7 @@ class ProductAdapter extends TypeAdapter<Product> {
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.characteristicsId);
+      ..write(obj.characteristics);
   }
 
   @override

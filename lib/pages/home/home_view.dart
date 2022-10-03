@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:store/models/characteristics_model.dart';
+import 'package:store/models/product_model.dart';
 import 'package:store/models/shop_model.dart';
 import 'package:store/pages/home/bloc/home_bloc.dart';
 
@@ -85,24 +87,19 @@ class HomePage extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           return SizedBox(
-              height: 40,
               child: Padding(
                 padding: const EdgeInsets.only(left: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      shops[index].name,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    )
-                  ],
+                child: ListTile(
+                  title: Text(shops[index].name),
+                  subtitle: Text(''),
                 ),
               ));
         },
         separatorBuilder: (_, i) => const Divider(),
         itemCount: shops.length),
   );
+
+
 
   _showSnackBarMessage(BuildContext context, String message) async {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));

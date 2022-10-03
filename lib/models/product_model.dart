@@ -12,9 +12,9 @@ class Product extends HiveObject{
   final String name;
 
   @HiveField(2)
-  final HiveList<Characteristics> characteristicsId;
+  final HiveList<Characteristics> characteristics;
 
-  Product(this.id, this.name, this.characteristicsId);
+  Product(this.id, this.name, this.characteristics);
 
   factory Product.fromMap(Map<String, dynamic> map){
     //TODO: make this normal
@@ -25,7 +25,14 @@ class Product extends HiveObject{
     return {
       'id': id,
       'name': name,
-      'characteristics': characteristicsId
+      'characteristics': characteristics
     };
+  }
+
+
+
+  @override
+  String toString() {
+    return name;
   }
 }
