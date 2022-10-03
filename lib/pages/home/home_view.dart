@@ -58,6 +58,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+
   Widget _bottomSide() {
     return BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
       if (state is HomePageLoadedFromMemory) {
@@ -82,23 +83,42 @@ class HomePage extends StatelessWidget {
     });
   }
 
-  Widget _listShops(List<Shop> shops) => Expanded(
-    child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          return SizedBox(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 30),
-                child: ListTile(
-                  title: Text(shops[index].name),
-                  subtitle: Text(''),
-                ),
-              ));
-        },
-        separatorBuilder: (_, i) => const Divider(),
-        itemCount: shops.length),
-  );
+  Widget _listShops(List<Shop> shops) =>
+      Expanded(
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          children: List.generate(shops.length, (index) {
+            String subtitle = '';
+            for (int i = 0; i < shops[index].products.length; i++) {
+              Product product = shops[index].products[i];
 
+              subtitle += '${product.name} (';
+              for (int l = 0; l < product.characteristics.length; l++){
+                  subtitle += product.characteristics[l].weight.toString();
+                  if (l < product.characteristics.length - 1){
+                    subtitle += ', ';
+                  }
+              }
+              subtitle += ')';
+              if (i < shops[index].products.length - 1){
+                subtitle += '\n ';
+              }
+            }
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(8)
+              ),
+                padding: const EdgeInsets.only(left: 15),
+                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: ListTile(
+                    title: Text(shops[index].name),
+                    subtitle: Text(subtitle),
+                  ),
+                );
+          }),
+        ),
+      );
 
 
   _showSnackBarMessage(BuildContext context, String message) async {

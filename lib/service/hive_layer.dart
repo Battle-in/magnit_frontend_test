@@ -50,6 +50,10 @@ class GetData {
 
       Hive.box(BoxNames.lastLoadDateTime).put(0, DateTime.now().toString());
 
+      for(var shop in newShops){
+        print(shop.products);
+      }
+
       return newShops;
     } catch (e) {
       print(e);
@@ -76,7 +80,6 @@ class GetData {
       for (var character in product['characteristics']){
         currentCharacteristics.add(newCharacteristics[character]);
       }
-      print(currentCharacteristics);
       newProducts.add(Product(product['id'], product['name'], HiveList<Characteristics>(characteristicsBox, objects: currentCharacteristics)));
     }
 
