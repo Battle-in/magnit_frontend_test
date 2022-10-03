@@ -13,9 +13,9 @@ main() async {
   Hive.registerAdapter(ProductAdapter());
   Hive.registerAdapter(ShopAdapter());
 
-  await Hive.openBox(BoxNames.characteristicBox);
-  await Hive.openBox(BoxNames.productsBox);
-  await Hive.openBox(BoxNames.shopsBox);
+  await Hive.openBox<Characteristics>(BoxNames.characteristicBox);
+  await Hive.openBox<Product>(BoxNames.productsBox);
+  await Hive.openBox<Shop>(BoxNames.shopsBox);
 
   runApp(const App());
 }
