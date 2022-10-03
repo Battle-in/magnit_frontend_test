@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:hive/hive.dart';
+import 'package:store/resources/box_names.dart';
 import 'package:store/service/hive_layer.dart';
-import 'package:store/service/network_requests.dart';
 
 import '../../../models/shop_model.dart';
 
@@ -17,10 +18,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _storeLoadHandler(StoreLoadEvent event, Emitter emitter) async {
     try{
-      List<Shop> shops = await getAllDataFromNetwork();
+      List<Shop> shops = await GetData().getAllDataFromNetwork();
       emit(HomePageLoaded(shops));
     } catch (e) {
-      emit(HomePageLoadingFailure(e.toString()));
+      String lastDateUpdate = Hive.box(BoxNames.lastLoadDateTime).get(0, defaultValue: 'empty');
+      if (lastDateUpdate == 'empty') {
+        emit(HomePageLoadingFailure(e.toString()));
+      } else {
+        emit(HomePageLoadedFromMemory(lastDateUpdate, await GetData().getAllDataFromMemory()));
+      }
     }
   }
 }

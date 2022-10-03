@@ -13,9 +13,11 @@ main() async {
   Hive.registerAdapter(ProductAdapter());
   Hive.registerAdapter(ShopAdapter());
 
+  ///open all boxes
   await Hive.openBox<Characteristics>(BoxNames.characteristicBox);
   await Hive.openBox<Product>(BoxNames.productsBox);
   await Hive.openBox<Shop>(BoxNames.shopsBox);
+  await Hive.openBox(BoxNames.lastLoadDateTime);
 
   runApp(const App());
 }

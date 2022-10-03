@@ -5,47 +5,86 @@ import 'package:store/models/shop_model.dart';
 import 'package:store/resources/box_names.dart';
 import 'package:store/service/network_requests.dart';
 
-Future<List<Shop>> getAllDataFromNetwork() async {
-  try {
-    final dynamic shops = await getAllShops();
-    final dynamic products = await getAllProducts();
-    final dynamic characteristics = await getAllCharacteristics();
+class GetData {
+  static final GetData _getData = GetData._internal();
 
-    final Box shopsBox = Hive.box<Shop>(BoxNames.shopsBox);
-    final Box productsBox = Hive.box<Product>(BoxNames.productsBox);
-    final Box characteristicsBox = Hive.box<Characteristics>(BoxNames.characteristicBox);
+  factory GetData() => _getData;
 
-    List<Shop> newShops = <Shop>[];
-    List<Product> newProducts = <Product>[];
+  GetData._internal();
+
+  Future<List<Shop>> getAllDataFromMemory() async {
+    try{
+      return Hive.box<Shop>(BoxNames.shopsBox).values.toList();
+    } catch (e){
+      rethrow;
+    }
+  }
+
+  Future<List<Shop>> getAllDataFromNetwork() async {
+    try {
+      final dynamic shops = await getAllShops();
+      final dynamic products = await getAllProducts();
+      final dynamic characteristics = await getAllCharacteristics();
+
+      final Box shopsBox = Hive.box<Shop>(BoxNames.shopsBox);
+      final Box productsBox = Hive.box<Product>(BoxNames.productsBox);
+      final Box characteristicsBox = Hive.box<Characteristics>(BoxNames.characteristicBox);
+
+      List<Characteristics> newCharacteristics = _getNewCharacteristics(characteristics);
+
+      characteristicsBox
+        ..clear()
+        ..addAll(newCharacteristics);
+
+      List<Product> newProducts = _getNewProducts(products, characteristicsBox, newCharacteristics);
+
+      productsBox
+        ..clear()
+        ..addAll(newProducts);
+
+      List<Shop> newShops = _getNewShops(shops, productsBox, newProducts);
+
+      shopsBox
+        ..clear()
+        ..addAll(newShops);
+
+      Hive.box(BoxNames.lastLoadDateTime).put(0, DateTime.now().toString());
+
+      return newShops;
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  List<Characteristics> _getNewCharacteristics(dynamic characteristics){
     List<Characteristics> newCharacteristics = <Characteristics>[];
 
     for (var characteristic in characteristics) {
       newCharacteristics.add(Characteristics(characteristic['id'], characteristic['weight']));
     }
 
-    characteristicsBox
-      ..clear()
-      ..addAll(newCharacteristics);
+    return newCharacteristics;
+  }
+
+  List<Product> _getNewProducts(dynamic products, Box characteristicsBox, List<Characteristics> newCharacteristics){
+    List<Product> newProducts = <Product>[];
 
     for (var product in products) {
       newProducts.add(Product(product['id'], product['name'], HiveList<Characteristics>(characteristicsBox, objects: newCharacteristics)));
     }
 
-    productsBox
-      ..clear()
-      ..addAll(newProducts);
+    return newProducts;
+  }
+
+  List<Shop> _getNewShops(dynamic shops, Box productsBox, List<Product> newProducts){
+    List<Shop> newShops = <Shop>[];
 
     for (var shop in shops) {
       newShops.add(Shop(shop['id'], shop['name'], HiveList<Product>(productsBox, objects: newProducts)));
     }
 
-    shopsBox
-      ..clear()
-      ..addAll(newShops);
-    print(newShops);
     return newShops;
-  } catch (e) {
-    print(e);
-    rethrow;
   }
 }
+

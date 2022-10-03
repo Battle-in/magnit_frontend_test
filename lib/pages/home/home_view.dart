@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:store/models/shop_model.dart';
 import 'package:store/pages/home/bloc/home_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -14,7 +15,7 @@ class HomePage extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          children: [_searchPanel(context), _shopList()],
+          children: [_searchPanel(context), _bottomSide()],
         ),
       ),
     );
@@ -55,33 +56,15 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _shopList() {
+  Widget _bottomSide() {
     return BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
-      if (state is HomePageLoaded) {
-        return Expanded(
-          child: ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              itemBuilder: (context, index) {
-                return SizedBox(
-                    height: 40,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 30),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            state.shops[index].name,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          )
-                        ],
-                      ),
-                    ));
-              },
-              separatorBuilder: (_, i) => const Divider(),
-              itemCount: state.shops.length),
-        );
+      if (state is HomePageLoadedFromMemory) {
+        _showSnackBarMessage(context, 'последнее обновление: ${state.lastDateUpdate}');
+        return _listShops(state.shops);
+      } else if (state is HomePageLoaded) {
+        return _listShops(state.shops);
       } else if (state is HomePageLoadingFailure) {
+        _showSnackBarMessage(context, state.message);
         return const Padding(
           padding: EdgeInsets.only(top: 20),
           child: Icon(Icons.mood_bad_sharp),
@@ -95,5 +78,33 @@ class HomePage extends StatelessWidget {
         );
       }
     });
+  }
+
+  Widget _listShops(List<Shop> shops) => Expanded(
+    child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          return SizedBox(
+              height: 40,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      shops[index].name,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    )
+                  ],
+                ),
+              ));
+        },
+        separatorBuilder: (_, i) => const Divider(),
+        itemCount: shops.length),
+  );
+
+  _showSnackBarMessage(BuildContext context, String message) async {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }
