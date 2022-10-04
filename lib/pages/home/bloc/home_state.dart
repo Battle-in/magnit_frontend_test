@@ -25,13 +25,25 @@ class HomePageLoaded extends HomeState {
   List<Object?> get props => [shops];
 }
 
-class HomePageLoadedFromMemory extends HomePageLoaded{
+class HomePageLoadedFromMemory extends HomePageLoaded {
   const HomePageLoadedFromMemory(this.lastDateUpdate, List<Shop> shops) : super(shops);
 
   final String lastDateUpdate;
 
   @override
   List<Object> get props => [shops, lastDateUpdate];
+}
+
+class HomePageFiltered extends HomePageLoaded {
+  final String productName;
+  final String productWeight;
+  final List<Shop> filteredShops;
+
+  const HomePageFiltered(this.productName, this.productWeight,
+      List<Shop> allShops, this.filteredShops) : super(allShops);
+
+  @override
+  List<Object> get props => [productName, productWeight];
 }
 
 class HomePageLoadingFailure extends HomeState {

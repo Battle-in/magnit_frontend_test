@@ -14,7 +14,7 @@ class App extends StatelessWidget {
       routes: {
         '/' : (context) => BlocProvider<HomeBloc>(
             create: (_) => HomeBloc()..add(const StoreLoadEvent()),
-            child: const HomePage(),
+            child: HomePage(),
         ),
       },
     );
