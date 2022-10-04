@@ -42,23 +42,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  List<Shop> _onlyNameFilter(List<Shop> shops, String productName){
+  HomePageFiltered _onlyNameFilter(List<Shop> shops, String productName){
     List<Shop> filteredShops = [];
+    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
 
     for (Shop shop in shops){
       for (Product product in shop.products){
         if (product.name.toLowerCase().contains(productName)){
+          searchableProduct = product;
           filteredShops.add(shop);
           break;
         }
       }
     }
 
-    return filteredShops;
+    return HomePageFiltered(productName, '', shops, filteredShops, searchableProduct);
   }
 
-  List<Shop> _onlyWeightFilter(List<Shop> shops, String weight){
+  HomePageFiltered _onlyWeightFilter(List<Shop> shops, String weight){
     List<Shop> filteredShops = [];
+    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
 
     double doubleWeight = double.parse(weight);
 
@@ -66,6 +69,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       for (Product product in shop.products){
         for (Characteristics characteristics in product.characteristics){
           if (characteristics.weight == doubleWeight){
+            searchableProduct = product;
             filteredShops.add(shop);
             break;
           }
@@ -73,11 +77,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     }
 
-    return filteredShops;
+    return HomePageFiltered('', weight, shops, filteredShops, searchableProduct);
   }
 
-  List<Shop> _nameAndWeightFilter(List<Shop> shops, String productName, String weight){
+  HomePageFiltered _nameAndWeightFilter(List<Shop> shops, String productName, String weight){
     List<Shop> filteredShops = [];
+    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
 
     double doubleWeight = double.parse(weight);
 
@@ -86,6 +91,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         if (product.name.toLowerCase().contains(productName)){
           for (Characteristics characteristics in product.characteristics){
             if (characteristics.weight == doubleWeight){
+              searchableProduct = product;
+              print(searchableProduct);
               filteredShops.add(shop);
               break;
             }
@@ -94,23 +101,25 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     }
 
-    return filteredShops;
+    return HomePageFiltered(productName, weight, shops, filteredShops, searchableProduct);
   }
 
   Future<void> _filterEventHandler(FilterEvent event, Emitter emitter) async {
     emitter(const HomeLoading());
 
-    if (event.weight != '' && event.productName != ''){
-      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
-          _nameAndWeightFilter(event.shops, event.productName, event.weight)));
-    } else if (event.weight == '' && event.productName != ''){
-      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
-          _onlyNameFilter(event.shops, event.productName)));
-    } else if (event.weight != '' && event.productName == ''){
-      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
-          _onlyWeightFilter(event.shops, event.weight)));
-    } else {
-      emitter(HomePageLoaded(event.shops));
+    try{
+      if (event.weight != '' && event.productName != ''){
+        emitter(
+            _nameAndWeightFilter(event.shops, event.productName, event.weight));
+      } else if (event.weight == '' && event.productName != ''){
+        emitter(_onlyNameFilter(event.shops, event.productName));
+      } else if (event.weight != '' && event.productName == ''){
+        emitter(_onlyWeightFilter(event.shops, event.weight));
+      } else {
+        emitter(HomePageLoaded(event.shops));
+      }
+    } catch (e) {
+      print(e);
     }
 
   }

@@ -28,10 +28,9 @@ class ProductPage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: Colors.teal,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(product.characteristics[index].weight.toString(), style: Theme.of(context).textTheme.headline6),
+                        child: Text('вес в кг: ${product.characteristics[index].weight}', style: Theme.of(context).textTheme.headline6),
                       ),
                     );
                   },
