@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:store/models/product_model.dart';
 import 'package:store/models/shop_model.dart';
 import 'package:store/pages/home/bloc/home_bloc.dart';
+import 'package:store/pages/magazine_page.dart';
 import 'package:store/service/formatters.dart';
 
 class HomePage extends StatelessWidget {
@@ -79,12 +80,12 @@ class HomePage extends StatelessWidget {
 
   Widget _bottomSide(BuildContext context, HomeState state) {
       if (state is HomePageFiltered){
-        return _listShops(state.filteredShops);
+        return _listShops(state.filteredShops, context);
       } else if (state is HomePageLoadedFromMemory) {
         _showSnackBarMessage(context, 'последнее обновление: ${state.lastDateUpdate}');
-        return _listShops(state.shops);
+        return _listShops(state.shops, context);
       } else if (state is HomePageLoaded) {
-        return _listShops(state.shops);
+        return _listShops(state.shops, context);
       } else if (state is HomeLoading) {
         return const Padding(
           padding: EdgeInsets.only(top: 20),
@@ -106,7 +107,7 @@ class HomePage extends StatelessWidget {
       }
   }
 
-  Widget _listShops(List<Shop> shops) => Expanded(
+  Widget _listShops(List<Shop> shops, BuildContext context) => Expanded(
         child: ListView(
           physics: const BouncingScrollPhysics(),
           children: List.generate(shops.length, (index) {
@@ -126,13 +127,21 @@ class HomePage extends StatelessWidget {
                 subtitle += '\n ';
               }
             }
-            return Container(
-              decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.only(left: 15),
-              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              child: ListTile(
-                title: Text(shops[index].name),
-                subtitle: Text(subtitle),
+
+
+            return InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MagazinePage(shop: shops[index],)));
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.only(left: 15),
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: ListTile(
+                  title: Text(shops[index].name),
+                  subtitle: Text(subtitle),
+                ),
               ),
             );
           }),
