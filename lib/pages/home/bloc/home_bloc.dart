@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
@@ -17,8 +15,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   void _storeLoadHandler(StoreLoadEvent event, Emitter emitter) async {
+    emit(const HomeLoading());
+    
     try{
-      List<Shop> shops = await GetData().getAllDataFromNetwork();
+      List<Shop> shops = await GetData().getAllDataFromNetworkAndSave();
       emit(HomePageLoaded(shops));
     } catch (e) {
       String lastDateUpdate = Hive.box(BoxNames.lastLoadDateTime).get(0, defaultValue: 'empty');

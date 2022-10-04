@@ -13,46 +13,25 @@ class GetData {
   GetData._internal();
 
   Future<List<Shop>> getAllDataFromMemory() async {
-    try{
-      return Hive.box<Shop>(BoxNames.shopsBox).values.toList();
-    } catch (e){
+    try {
+     var shops = Hive.box<Shop>(BoxNames.shopsBox).values.toList();
+     return shops;
+    } catch (e) {
       rethrow;
     }
   }
 
-  Future<List<Shop>> getAllDataFromNetwork() async {
+  Future<List<Shop>> getAllDataFromNetworkAndSave() async {
     try {
-      final dynamic shops = await getAllShops();
-      final dynamic products = await getAllProducts();
-      final dynamic characteristics = await getAllCharacteristics();
+      final shopsFromNet = await getAllShops();
+      final productsFromNet = await getAllProducts();
+      final characteristicsFromNet = await getAllCharacteristics();
 
-      final Box shopsBox = Hive.box<Shop>(BoxNames.shopsBox);
-      final Box productsBox = Hive.box<Product>(BoxNames.productsBox);
-      final Box characteristicsBox = Hive.box<Characteristics>(BoxNames.characteristicBox);
-
-      List<Characteristics> newCharacteristics = _getNewCharacteristics(characteristics);
-
-      characteristicsBox
-        ..clear()
-        ..addAll(newCharacteristics);
-
-      List<Product> newProducts = _getNewProducts(products, characteristicsBox, newCharacteristics);
-
-      productsBox
-        ..clear()
-        ..addAll(newProducts);
-
-      List<Shop> newShops = _getNewShops(shops, productsBox, newProducts);
-
-      shopsBox
-        ..clear()
-        ..addAll(newShops);
+      List<Characteristics> newCharacteristics = await _refreshSavedCharacteristics(characteristicsFromNet);
+      List<Product> newProducts = await _refreshSavedProduct(productsFromNet, newCharacteristics);
+      List<Shop> newShops = await _refreshSavedShops(shopsFromNet, newProducts);
 
       Hive.box(BoxNames.lastLoadDateTime).put(0, DateTime.now().toString());
-
-      for(var shop in newShops){
-        print(shop.products);
-      }
 
       return newShops;
     } catch (e) {
@@ -61,47 +40,64 @@ class GetData {
     }
   }
 
-  List<Characteristics> _getNewCharacteristics(dynamic characteristics){
-    List<Characteristics> newCharacteristics = <Characteristics>[];
+  Future<List<Shop>> _refreshSavedShops(var shopsFromNet, List<Product> products) async {
+    Box shopBox = Hive.box<Shop>(BoxNames.shopsBox);
+    Box productBox = Hive.box<Product>(BoxNames.productsBox);
+    List<Shop> newShops = [];
 
-    for (var characteristic in characteristics) {
-      newCharacteristics.add(Characteristics(characteristic['id'], characteristic['weight']));
+    for (var shop in shopsFromNet){
+      HiveList<Product> shopProducts = HiveList<Product>(productBox);
+
+      for (var productId in shop['products']){
+        shopProducts.add(products[productId]);
+      }
+
+      newShops.add(Shop(shop['id'], shop['name'], shopProducts));
     }
 
-    return newCharacteristics;
+    await shopBox.clear();
+    await shopBox.addAll(newShops);
+
+    return newShops;
   }
 
-  List<Product> _getNewProducts(dynamic products, Box characteristicsBox, List<Characteristics> newCharacteristics){
-    List<Product> newProducts = <Product>[];
+  Future<List<Product>> _refreshSavedProduct(var productsFromNet, List<Characteristics> characteristics) async {
+    Box productBox = Hive.box<Product>(BoxNames.productsBox);
+    Box characteristicsBox = Hive.box<Characteristics>(BoxNames.characteristicBox);
+    List<Product> newProducts = [];
 
-    for (var product in products) {
-      List<Characteristics> currentCharacteristics = <Characteristics>[];
+    for (var product in productsFromNet){
+      HiveList<Characteristics> productCharacteristics = HiveList<Characteristics>(characteristicsBox);
 
-      for (var character in product['characteristics']){
-        currentCharacteristics.add(newCharacteristics[character]);
+      for (var characteristicId in product['characteristics']){
+        productCharacteristics.add(characteristics[characteristicId]);
       }
-      newProducts.add(Product(product['id'], product['name'], HiveList<Characteristics>(characteristicsBox, objects: currentCharacteristics)));
+
+      newProducts.add(Product(product['id'], product['name'], productCharacteristics));
     }
+
+    await productBox.clear();
+    await productBox.addAll(newProducts);
 
     return newProducts;
   }
 
-  List<Shop> _getNewShops(dynamic shops, Box productsBox, List<Product> newProducts){
-    List<Shop> newShops = <Shop>[];
+  Future<List<Characteristics>> _refreshSavedCharacteristics(var characteristicsFromNet) async {
+    try{
+      Box characteristicsBox = Hive.box<Characteristics>(BoxNames.characteristicBox);
+      List<Characteristics> newCharacteristics = [];
 
-    for (var shop in shops) {
-      List<Product> currentProduct = <Product>[];
-
-      for(var product in shop['products']){
-        currentProduct.add(newProducts[product]);
+      for (var element in characteristicsFromNet){
+        newCharacteristics.add(Characteristics(element['id'], element['weight']));
       }
 
-      newShops.add(Shop(shop['id'], shop['name'], HiveList<Product>(productsBox, objects: currentProduct)));
+      await characteristicsBox.clear();
+      await characteristicsBox.addAll(newCharacteristics);
 
-      currentProduct = [];
+      return newCharacteristics;
+    } catch (e) {
+      print(e);
+      rethrow;
     }
-
-    return newShops;
   }
 }
-

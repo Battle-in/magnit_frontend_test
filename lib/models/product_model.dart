@@ -12,7 +12,7 @@ class Product extends HiveObject{
   final String name;
 
   @HiveField(2)
-  final HiveList<Characteristics> characteristics;
+  HiveList<Characteristics> characteristics;
 
   Product(this.id, this.name, this.characteristics);
 

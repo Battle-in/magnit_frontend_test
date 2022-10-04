@@ -14,6 +14,11 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Store'),
         centerTitle: true,
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => context.read<HomeBloc>().add(const StoreLoadEvent()))
+        ],
       ),
       body: Center(
         child: Column(
@@ -41,12 +46,13 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             TextField(
+              onChanged: (productName) => _search(productName, weightFieldController.text),
               onSubmitted: (a) => weightFocusNode.requestFocus(),
               controller: nameFieldController,
               decoration: fieldDecoration.copyWith(hintText: 'Сыр', label: const Text('Наименование продукта')),
             ),
             TextField(
-              //onChanged: (a) => {context.read<HomeBloc>().add(event)},
+              onChanged: (weight) => _search(nameFieldController.text, weight),
               keyboardType: TextInputType.number,
               controller: weightFieldController,
               focusNode: weightFocusNode,
@@ -58,6 +64,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  _search(String productName, String weight){
+
+  }
 
   Widget _bottomSide() {
     return BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
@@ -66,8 +75,10 @@ class HomePage extends StatelessWidget {
         return _listShops(state.shops);
       } else if (state is HomePageLoaded) {
         return _listShops(state.shops);
-      } else if (state is HomePageLoadingFailure) {
-        _showSnackBarMessage(context, state.message);
+      } else if (state is Lo)
+
+      else if (state is HomePageLoadingFailure) {
+        _showSnackBarMessage(context, 'Произошла ошибка сети, увы ранних данных на устройсте не обнаруженно');
         return const Padding(
           padding: EdgeInsets.only(top: 20),
           child: Icon(Icons.mood_bad_sharp),

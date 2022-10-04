@@ -13,7 +13,7 @@ class Shop extends HiveObject{
   final String name;
   
   @HiveField(2)
-  final HiveList<Product> products;
+  HiveList<Product> products;
 
   Shop(this.id, this.name, this.products);
 

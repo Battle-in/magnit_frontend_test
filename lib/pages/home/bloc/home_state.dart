@@ -9,8 +9,8 @@ class HomeInitial extends HomeState {
   List<Object> get props => [];
 }
 
-class HomeLoad extends HomeState {
-  const HomeLoad();
+class HomeLoading extends HomeState {
+  const HomeLoading();
 
   @override
   List<Object?> get props => [];
