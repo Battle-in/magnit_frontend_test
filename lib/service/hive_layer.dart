@@ -35,7 +35,6 @@ class GetData {
 
       return newShops;
     } catch (e) {
-      print(e);
       rethrow;
     }
   }
@@ -96,7 +95,6 @@ class GetData {
 
       return newCharacteristics;
     } catch (e) {
-      print(e);
       rethrow;
     }
   }

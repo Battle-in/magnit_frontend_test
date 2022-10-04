@@ -6,7 +6,6 @@ Dio _dio = Dio();
 
 Future<dynamic> getAllShops() async {
   try{
-    print(ApiRoutes.shopApiRoute);
     Response response = await _dio.get(ApiRoutes.shopApiRoute);
     return response.data;
   } catch (exp){

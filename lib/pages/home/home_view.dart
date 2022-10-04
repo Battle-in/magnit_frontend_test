@@ -40,10 +40,6 @@ class HomePage extends StatelessWidget {
       border: OutlineInputBorder(),
     );
 
-    ValueSetter<String> onChanged = (_) {
-
-    };
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       color: Colors.black26,

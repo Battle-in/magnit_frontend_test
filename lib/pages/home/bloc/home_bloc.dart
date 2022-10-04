@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
@@ -12,43 +14,32 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
+  Stream<HomeState>? storeLoadStream;
+
   HomeBloc() : super(HomeInitial()) {
-    on<StoreLoadEvent>(_storeLoadHandler);
+
+    on<StoreLoadEvent>((event, emitter) async {
+      storeLoadStream = _storeLoadHandler(event);
+      storeLoadStream!.listen((state) => emit(state));
+    });
+
     on<FilterEvent>(_filterEventHandler);
   }
 
-  Future<void> _storeLoadHandler(StoreLoadEvent event, Emitter emitter) async {
-    emit(const HomeLoading());
+  Stream<HomeState> _storeLoadHandler(StoreLoadEvent event) async* {
+    yield const HomeLoading();
     
     try{
       List<Shop> shops = await GetData().getAllDataFromNetworkAndSave();
-      emit(HomePageLoaded(shops));
+      yield HomePageLoaded(shops);
     } catch (e) {
       String lastDateUpdate = Hive.box(BoxNames.lastLoadDateTime).get(0, defaultValue: 'empty');
       if (lastDateUpdate == 'empty') {
-        emit(HomePageLoadingFailure(e.toString()));
+        yield HomePageLoadingFailure(e.toString());
       } else {
-        emit(HomePageLoadedFromMemory(lastDateUpdate, await GetData().getAllDataFromMemory()));
+        yield HomePageLoadedFromMemory(lastDateUpdate, await GetData().getAllDataFromMemory());
       }
     }
-  }
-
-  Future<void> _filterEventHandler(FilterEvent event, Emitter emitter) async {
-    emit(HomeLoading());
-
-    List<Shop> filteredShops = [];
-
-    if (event.weight != '' && event.productName != ''){
-      filteredShops = _nameAndWeightFilter(event.shops, event.productName, event.weight);
-    } else if (event.weight == '' && event.productName != ''){
-      filteredShops = _onlyNameFilter(event.shops, event.productName);
-    } else if (event.weight != '' && event.productName == ''){
-      filteredShops = _onlyWeightFilter(event.shops, event.weight);
-    } else {
-      filteredShops = event.shops;
-    }
-
-    emit(HomePageFiltered(event.productName, event.weight, event.shops, filteredShops));
   }
 
   List<Shop> _onlyNameFilter(List<Shop> shops, String productName){
@@ -104,5 +95,23 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
 
     return filteredShops;
+  }
+
+  Future<void> _filterEventHandler(FilterEvent event, Emitter emitter) async {
+    emitter(const HomeLoading());
+
+    if (event.weight != '' && event.productName != ''){
+      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
+          _nameAndWeightFilter(event.shops, event.productName, event.weight)));
+    } else if (event.weight == '' && event.productName != ''){
+      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
+          _onlyNameFilter(event.shops, event.productName)));
+    } else if (event.weight != '' && event.productName == ''){
+      emitter(HomePageFiltered(event.productName, event.weight, event.shops,
+          _onlyWeightFilter(event.shops, event.weight)));
+    } else {
+      emitter(HomePageLoaded(event.shops));
+    }
+
   }
 }
