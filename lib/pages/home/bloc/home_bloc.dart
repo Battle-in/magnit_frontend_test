@@ -11,13 +11,13 @@ import 'package:store/service/hive_layer.dart';
 import 'package:store/models/shop_model.dart';
 
 part 'home_event.dart';
+
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Stream<HomeState>? storeLoadStream;
 
   HomeBloc() : super(HomeInitial()) {
-
     on<StoreLoadEvent>((event, emitter) async {
       storeLoadStream = _storeLoadHandler(event);
       storeLoadStream!.listen((state) => emit(state));
@@ -28,8 +28,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Stream<HomeState> _storeLoadHandler(StoreLoadEvent event) async* {
     yield const HomeLoading();
-    
-    try{
+
+    try {
       List<Shop> shops = await GetData().getAllDataFromNetworkAndSave();
       yield HomePageLoaded(shops);
     } catch (e) {
@@ -42,13 +42,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  HomePageFiltered _onlyNameFilter(List<Shop> shops, String productName){
+  HomePageFiltered _onlyNameFilter(List<Shop> shops, String productName) {
     List<Shop> filteredShops = [];
     List<Product> searchableProduct = [];
 
-    for (Shop shop in shops){
-      for (Product product in shop.products){
-        if (product.name.toLowerCase().contains(productName)){
+    for (Shop shop in shops) {
+      for (Product product in shop.products) {
+        if (product.name.toLowerCase().contains(productName)) {
           searchableProduct.add(product);
           filteredShops.add(shop);
           break;
@@ -59,16 +59,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     return HomePageFiltered(productName, '', shops, filteredShops, searchableProduct);
   }
 
-  HomePageFiltered _onlyWeightFilter(List<Shop> shops, String weight){
+  HomePageFiltered _onlyWeightFilter(List<Shop> shops, String weight) {
     List<Shop> filteredShops = [];
     List<Product> searchableProduct = [];
 
     double doubleWeight = double.parse(weight);
 
-    for (Shop shop in shops){
-      for (Product product in shop.products){
-        for (Characteristics characteristics in product.characteristics){
-          if (characteristics.weight == doubleWeight){
+    for (Shop shop in shops) {
+      for (Product product in shop.products) {
+        for (Characteristics characteristics in product.characteristics) {
+          if (characteristics.weight == doubleWeight) {
             searchableProduct.add(product);
             filteredShops.add(shop);
             break;
@@ -80,19 +80,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     return HomePageFiltered('', weight, shops, filteredShops, searchableProduct);
   }
 
-  HomePageFiltered _nameAndWeightFilter(List<Shop> shops, String productName, String weight){
+  HomePageFiltered _nameAndWeightFilter(List<Shop> shops, String productName, String weight) {
     List<Shop> filteredShops = [];
     List<Product> searchableProduct = [];
 
     double doubleWeight = double.parse(weight);
 
-    for (Shop shop in shops){
-      for (Product product in shop.products){
-        if (product.name.toLowerCase().contains(productName)){
-          for (Characteristics characteristics in product.characteristics){
-            if (characteristics.weight == doubleWeight){
+    for (Shop shop in shops) {
+      for (Product product in shop.products) {
+        if (product.name.toLowerCase().contains(productName)) {
+          for (Characteristics characteristics in product.characteristics) {
+            if (characteristics.weight == doubleWeight) {
               searchableProduct.add(product);
-              print(searchableProduct);
               filteredShops.add(shop);
               break;
             }
@@ -107,20 +106,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _filterEventHandler(FilterEvent event, Emitter emitter) async {
     emitter(const HomeLoading());
 
-    try{
-      if (event.weight != '' && event.productName != ''){
-        emitter(
-            _nameAndWeightFilter(event.shops, event.productName, event.weight));
-      } else if (event.weight == '' && event.productName != ''){
-        emitter(_onlyNameFilter(event.shops, event.productName));
-      } else if (event.weight != '' && event.productName == ''){
-        emitter(_onlyWeightFilter(event.shops, event.weight));
-      } else {
-        emitter(HomePageLoaded(event.shops));
-      }
-    } catch (e) {
-      print(e);
+    if (event.weight != '' && event.productName != '') {
+      emitter(_nameAndWeightFilter(event.shops, event.productName, event.weight));
+    } else if (event.weight == '' && event.productName != '') {
+      emitter(_onlyNameFilter(event.shops, event.productName));
+    } else if (event.weight != '' && event.productName == '') {
+      emitter(_onlyWeightFilter(event.shops, event.weight));
+    } else {
+      emitter(HomePageLoaded(event.shops));
     }
-
   }
 }
