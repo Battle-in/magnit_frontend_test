@@ -44,12 +44,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomePageFiltered _onlyNameFilter(List<Shop> shops, String productName){
     List<Shop> filteredShops = [];
-    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
+    List<Product> searchableProduct = [];
 
     for (Shop shop in shops){
       for (Product product in shop.products){
         if (product.name.toLowerCase().contains(productName)){
-          searchableProduct = product;
+          searchableProduct.add(product);
           filteredShops.add(shop);
           break;
         }
@@ -61,7 +61,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomePageFiltered _onlyWeightFilter(List<Shop> shops, String weight){
     List<Shop> filteredShops = [];
-    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
+    List<Product> searchableProduct = [];
 
     double doubleWeight = double.parse(weight);
 
@@ -69,7 +69,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       for (Product product in shop.products){
         for (Characteristics characteristics in product.characteristics){
           if (characteristics.weight == doubleWeight){
-            searchableProduct = product;
+            searchableProduct.add(product);
             filteredShops.add(shop);
             break;
           }
@@ -82,7 +82,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomePageFiltered _nameAndWeightFilter(List<Shop> shops, String productName, String weight){
     List<Shop> filteredShops = [];
-    Product searchableProduct = Product(-1, 'error', HiveList<Characteristics>(Hive.box<Characteristics>(BoxNames.characteristicBox)));
+    List<Product> searchableProduct = [];
 
     double doubleWeight = double.parse(weight);
 
@@ -91,7 +91,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         if (product.name.toLowerCase().contains(productName)){
           for (Characteristics characteristics in product.characteristics){
             if (characteristics.weight == doubleWeight){
-              searchableProduct = product;
+              searchableProduct.add(product);
               print(searchableProduct);
               filteredShops.add(shop);
               break;

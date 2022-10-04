@@ -38,10 +38,10 @@ class HomePageFiltered extends HomePageLoaded {
   final String productName;
   final String productWeight;
   final List<Shop> filteredShops;
-  final Product searchableProduct;
+  final List<Product> searchableProducts;
 
   const HomePageFiltered(this.productName, this.productWeight,
-      List<Shop> allShops, this.filteredShops, this.searchableProduct) : super(allShops);
+      List<Shop> allShops, this.filteredShops, this.searchableProducts) : super(allShops);
 
   @override
   List<Object> get props => [productName, productWeight];

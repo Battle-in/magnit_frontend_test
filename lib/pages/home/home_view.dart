@@ -121,6 +121,10 @@ class HomePage extends StatelessWidget {
           for (int i = 0; i < shops[index].products.length; i++) {
             Product product = shops[index].products[i];
 
+            if (state is HomePageFiltered && product == state.searchableProducts[index]) {
+              subtitle += '*';
+            }
+
             subtitle += '${product.name} (';
             for (int l = 0; l < product.characteristics.length; l++) {
               subtitle += product.characteristics[l].weight.toString();
@@ -139,7 +143,7 @@ class HomePage extends StatelessWidget {
             onTap: () {
               if (state is HomePageFiltered) {
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => ProductPage(product: state.searchableProduct)));
+                    builder: (context) => ProductPage(product: state.searchableProducts[index])));
               } else {
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context) => MagazinePage(shop: shops[index],)));
